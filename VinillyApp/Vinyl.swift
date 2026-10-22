@@ -17,8 +17,24 @@ final class Vinyl {
     var year: String
     var coverUrl: String?
     var addedAt: Date = Date()
+    
+    
+    @Attribute(.externalStorage) var customImageData: Data?
+    var customColorHex: String?
+    var customEmoji: String?
 
-    init(barcode: String, title: String, artist: String, genre: String, year: String, coverUrl: String? = nil, addedAt: Date = Date()) {
+    init(
+        barcode: String,
+        title: String,
+        artist: String,
+        genre: String,
+        year: String,
+        coverUrl: String? = nil,
+        addedAt: Date = Date(),
+        customImageData: Data? = nil,
+        customColorHex: String? = nil,
+        customEmoji: String? = nil
+    ) {
         self.barcode = barcode
         self.title = title
         self.artist = artist
@@ -26,5 +42,8 @@ final class Vinyl {
         self.year = year
         self.coverUrl = coverUrl
         self.addedAt = addedAt
+        self.customImageData = customImageData
+        self.customColorHex = customColorHex
+        self.customEmoji = customEmoji
     }
 }

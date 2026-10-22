@@ -81,7 +81,46 @@ class DatabaseService {
         }
         return nil
     }
-
+    
+    
+    func fetchOtherVinylsByArtist(artist: String, excludingBarcode: String) -> [Vinyl] {
+        guard let db = db, !artist.isEmpty else { return [] }
+        var results: [Vinyl] = []
+        
+        let sql = """
+            SELECT barcode, title, artist, genre, year, coverUrl 
+            FROM vinyls 
+            WHERE artist = ? AND barcode != ? 
+            LIMIT 20;
+        """
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        
+        if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, (artist as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(stmt, 2, (excludingBarcode as NSString).utf8String, -1, nil)
+            
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                let barcode = String(cString: sqlite3_column_text(stmt, 0))
+                let title = String(cString: sqlite3_column_text(stmt, 1))
+                let artist = String(cString: sqlite3_column_text(stmt, 2))
+                let genre = sqlite3_column_text(stmt, 3) != nil ? String(cString: sqlite3_column_text(stmt, 3)) : "Rock"
+                let year = sqlite3_column_text(stmt, 4) != nil ? String(cString: sqlite3_column_text(stmt, 4)) : "N/D"
+                let coverUrl: String? = sqlite3_column_text(stmt, 5) != nil ? String(cString: sqlite3_column_text(stmt, 5)) : nil
+                
+                results.append(Vinyl(
+                    barcode: barcode,
+                    title: title,
+                    artist: artist,
+                    genre: genre,
+                    year: year,
+                    coverUrl: coverUrl
+                ))
+            }
+        }
+        return results
+    }
+    
     func searchByText(query: String) -> [Vinyl] {
         guard let db = db, !query.isEmpty else { return [] }
         var results: [Vinyl] = []
